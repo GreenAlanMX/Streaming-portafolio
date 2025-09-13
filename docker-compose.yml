@@ -1,33 +1,35 @@
 version: '3.9'
 
 services:
-  mongo-server:
-    image: mongo:latest
-    container_name: mongo-server
-    restart: always
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_DATABASE=movieAnalyticsDB
     ports:
       - "27017:27017"
     volumes:
-      - mongodb-data:/data/db
-    networks:
-      - mongodb-network
-  mongo-client:
-    image: mongo-express:latest
-    container_name: mongo-client
-    restart: always
-    depends_on:
-      - mongo-server
+      - mongo-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks: [mongo-net]
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: mongo-express
+    restart: unless-stopped
     environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo-server
+      - ME_CONFIG_MONGODB_SERVER=mongo
       - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH=false
+    depends_on: [mongo]
     ports:
       - "8081:8081"
-    networks:
-      - mongodb-network
+    networks: [mongo-net]
 
 volumes:
-  mongodb-data:
+  mongo-data: {}
 
 networks:
-  mongodb-network:
+  mongo-net:
     driver: bridge
