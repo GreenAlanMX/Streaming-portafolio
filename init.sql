@@ -1,629 +1,436 @@
-// ============================================
-// MONGODB MOVIE ANALYTICS PROJECT
-// Complete implementation for all requirements
-// ============================================
+// =====================================================
+// DISEÑO DE COLECCIONES MONGODB
+// =====================================================
 
-// ============================================
-// 1. COLLECTION/DOCUMENT DESIGN
-// ============================================
+// 1. COLECCIÓN: content (Unificada para movies y series)
+// Ventajas: Permite consultas unificadas y mejor escalabilidad
+const contentSchema = {
+  _id: ObjectId,
+  content_id: String,        // Identificador único del contenido
+  type: String,              // "movie" o "series"
+  title: String,
+  genre: [String],
+  rating: Number,
+  views_count: Number,       // Para movies: views_count, para series: total_views
+  production_budget: Number,
+  release_year: Number,      // Solo para movies
+  duration_minutes: Number,  // Solo para movies
+  seasons: Number,           // Solo para series
+  episodes_per_season: [Number], // Solo para series
+  avg_episode_duration: Number,  // Solo para series
+  created_at: Date,
+  updated_at: Date
+};
 
-// Switch to the database
-use movieAnalyticsDB
+// 2. COLECCIÓN: analytics (Para métricas y estadísticas)
+const analyticsSchema = {
+  _id: ObjectId,
+  content_id: String,
+  date: Date,
+  daily_views: Number,
+  revenue: Number,
+  user_ratings: [Number],
+  demographic_data: {
+    age_groups: Object,
+    regions: Object
+  }
+};
 
-// Create collections with validation schemas
-db.createCollection("movies", {
-   validator: {
-      $jsonSchema: {
-         bsonType: "object",
-         required: ["content_id", "title", "genre", "duration_minutes", "release_year", "rating"],
-         properties: {
-            content_id: { bsonType: "string" },
-            title: { bsonType: "string" },
-            genre: { bsonType: "array", items: { bsonType: "string" } },
-            duration_minutes: { bsonType: "int", minimum: 1 },
-            release_year: { bsonType: "int", minimum: 1900 },
-            rating: { bsonType: "double", minimum: 0, maximum: 5 },
-            views_count: { bsonType: "int", minimum: 0 },
-            production_budget: { bsonType: "long", minimum: 0 }
-         }
+// =====================================================
+// SCRIPTS DE INSERCIÓN CON DATOS
+// =====================================================
+
+// Conectar a MongoDB
+use('streaming_platform');
+
+// Limpiar colecciones existentes
+db.content.drop();
+db.analytics.drop();
+
+// Insertar datos de contenido
+const contentData = [
+  // Movies
+  {
+    content_id: "M001",
+    type: "movie",
+    title: "Data Adventures",
+    genre: ["Action", "Sci-Fi"],
+    duration_minutes: 120,
+    release_year: 2023,
+    rating: 4.2,
+    views_count: 15420,
+    production_budget: 50000000,
+    created_at: new Date(),
+    updated_at: new Date()
+  },
+  {
+    content_id: "M002",
+    type: "movie",
+    title: "Analytics Kingdom",
+    genre: ["Fantasy", "Adventure"],
+    duration_minutes: 98,
+    release_year: 2024,
+    rating: 4.5,
+    views_count: 23150,
+    production_budget: 35000000,
+    created_at: new Date(),
+    updated_at: new Date()
+  },
+  // Series
+  {
+    content_id: "S001",
+    type: "series",
+    title: "Analytics Chronicles",
+    genre: ["Drama", "Technology"],
+    seasons: 3,
+    episodes_per_season: [10, 12, 8],
+    avg_episode_duration: 45,
+    rating: 4.7,
+    views_count: 89650,
+    production_budget: 120000000,
+    created_at: new Date(),
+    updated_at: new Date()
+  },
+  {
+    content_id: "S002",
+    type: "series",
+    title: "Data Detectives",
+    genre: ["Crime", "Mystery"],
+    seasons: 2,
+    episodes_per_season: [8, 10],
+    avg_episode_duration: 52,
+    rating: 4.3,
+    views_count: 67420,
+    production_budget: 85000000,
+    created_at: new Date(),
+    updated_at: new Date()
+  }
+];
+
+// Insertar contenido
+db.content.insertMany(contentData);
+
+// Insertar datos de analytics (simulados)
+const analyticsData = [
+  {
+    content_id: "M001",
+    date: new Date("2024-01-15"),
+    daily_views: 1250,
+    revenue: 3750.00,
+    user_ratings: [4, 5, 4, 3, 5],
+    demographic_data: {
+      age_groups: {"18-25": 30, "26-35": 45, "36-45": 25},
+      regions: {"North America": 60, "Europe": 30, "Asia": 10}
+    }
+  },
+  {
+    content_id: "M002",
+    date: new Date("2024-02-20"),
+    daily_views: 1890,
+    revenue: 5670.00,
+    user_ratings: [5, 4, 5, 5, 4],
+    demographic_data: {
+      age_groups: {"18-25": 35, "26-35": 40, "36-45": 25},
+      regions: {"North America": 55, "Europe": 35, "Asia": 10}
+    }
+  },
+  {
+    content_id: "S001",
+    date: new Date("2024-03-10"),
+    daily_views: 2890,
+    revenue: 8670.00,
+    user_ratings: [5, 5, 4, 5, 4],
+    demographic_data: {
+      age_groups: {"18-25": 25, "26-35": 50, "36-45": 25},
+      regions: {"North America": 50, "Europe": 40, "Asia": 10}
+    }
+  },
+  {
+    content_id: "S002",
+    date: new Date("2024-04-05"),
+    daily_views: 2100,
+    revenue: 6300.00,
+    user_ratings: [4, 4, 5, 3, 4],
+    demographic_data: {
+      age_groups: {"18-25": 20, "26-35": 55, "36-45": 25},
+      regions: {"North America": 65, "Europe": 25, "Asia": 10}
+    }
+  }
+];
+
+db.analytics.insertMany(analyticsData);
+
+// =====================================================
+// CREACIÓN DE ÍNDICES OPTIMIZADOS
+// =====================================================
+
+// Índices para la colección content
+db.content.createIndex({ "content_id": 1 }, { unique: true }); // Búsquedas por ID
+db.content.createIndex({ "type": 1 }); // Filtrar por tipo (movie/series)
+db.content.createIndex({ "genre": 1 }); // Búsquedas por género
+db.content.createIndex({ "rating": -1 }); // Ordenar por rating descendente
+db.content.createIndex({ "views_count": -1 }); // Contenido más visto
+db.content.createIndex({ "release_year": -1 }); // Películas más recientes
+db.content.createIndex({ "title": "text" }); // Búsqueda de texto completo
+
+// Índices compuestos para consultas complejas
+db.content.createIndex({ "type": 1, "rating": -1 }); // Mejores por tipo
+db.content.createIndex({ "genre": 1, "rating": -1 }); // Mejores por género
+db.content.createIndex({ "production_budget": -1, "views_count": -1 }); // ROI analysis
+
+// Índices para la colección analytics
+db.analytics.createIndex({ "content_id": 1 });
+db.analytics.createIndex({ "date": -1 });
+db.analytics.createIndex({ "content_id": 1, "date": -1 });
+
+print("✅ Base de datos, colecciones e índices creados exitosamente");
+
+// =====================================================
+// PIPELINE DE AGREGACIÓN 1: TOP CONTENIDO POR GÉNERO
+// =====================================================
+
+print("\n🚀 PIPELINE 1: Top contenido por género con estadísticas");
+
+db.content.aggregate([
+  // Etapa 1: Desenrollar géneros para análisis individual
+  {
+    $unwind: "$genre"
+  },
+  
+  // Etapa 2: Agrupar por género y calcular métricas
+  {
+    $group: {
+      _id: "$genre",
+      total_content: { $sum: 1 },
+      avg_rating: { $avg: "$rating" },
+      total_views: { $sum: "$views_count" },
+      avg_budget: { $avg: "$production_budget" },
+      top_content: {
+        $push: {
+          title: "$title",
+          rating: "$rating",
+          views: "$views_count",
+          type: "$type"
+        }
       }
-   }
-})
-
-// Create users collection for demographics
-db.createCollection("users", {
-   validator: {
-      $jsonSchema: {
-         bsonType: "object",
-         required: ["user_id", "age", "gender", "country", "registration_date"],
-         properties: {
-            user_id: { bsonType: "string" },
-            age: { bsonType: "int", minimum: 13 },
-            gender: { enum: ["M", "F", "Other"] },
-            country: { bsonType: "string" },
-            city: { bsonType: "string" },
-            registration_date: { bsonType: "date" }
-         }
-      }
-   }
-})
-
-// Create viewing sessions collection for analytics
-db.createCollection("viewing_sessions", {
-   validator: {
-      $jsonSchema: {
-         bsonType: "object",
-         required: ["session_id", "user_id", "content_id", "start_time", "watch_duration"],
-         properties: {
-            session_id: { bsonType: "string" },
-            user_id: { bsonType: "string" },
-            content_id: { bsonType: "string" },
-            start_time: { bsonType: "date" },
-            end_time: { bsonType: "date" },
-            watch_duration: { bsonType: "int", minimum: 0 },
-            device_type: { enum: ["mobile", "tablet", "desktop", "smart_tv"] },
-            quality: { enum: ["SD", "HD", "4K"] },
-            completed: { bsonType: "bool" }
-         }
-      }
-   }
-})
-
-// ============================================
-// 2. DATA INSERTION SCRIPTS
-// ============================================
-
-// Insert movies data (based on your JSON structure)
-db.movies.insertMany([
-   {
-      "content_id": "M001",
-      "title": "Advanced World",
-      "genre": ["Sci-Fi", "Horror", "Drama"],
-      "duration_minutes": 179,
-      "release_year": 2020,
-      "rating": 3.5,
-      "views_count": 66721,
-      "production_budget": NumberLong(220088717)
-   },
-   {
-      "content_id": "M002",
-      "title": "Neural Signal",
-      "genre": ["Animation", "Horror"],
-      "duration_minutes": 146,
-      "release_year": 2021,
-      "rating": 2.8,
-      "views_count": 11128,
-      "production_budget": NumberLong(23593231)
-   },
-   {
-      "content_id": "M003",
-      "title": "Digital Dreams",
-      "genre": ["Drama", "Thriller"],
-      "duration_minutes": 132,
-      "release_year": 2022,
-      "rating": 4.2,
-      "views_count": 89543,
-      "production_budget": NumberLong(45000000)
-   },
-   {
-      "content_id": "M004",
-      "title": "Quantum Reality",
-      "genre": ["Sci-Fi", "Action"],
-      "duration_minutes": 158,
-      "release_year": 2023,
-      "rating": 4.7,
-      "views_count": 156789,
-      "production_budget": NumberLong(180000000)
-   }
-])
-
-// Insert sample users data
-db.users.insertMany([
-   {
-      "user_id": "U001",
-      "age": 25,
-      "gender": "M",
-      "country": "Mexico",
-      "city": "Mérida",
-      "registration_date": new Date("2023-01-15")
-   },
-   {
-      "user_id": "U002",
-      "age": 32,
-      "gender": "F",
-      "country": "USA",
-      "city": "New York",
-      "registration_date": new Date("2022-08-20")
-   },
-   {
-      "user_id": "U003",
-      "age": 19,
-      "gender": "Other",
-      "country": "Canada",
-      "city": "Toronto",
-      "registration_date": new Date("2023-03-10")
-   },
-   {
-      "user_id": "U004",
-      "age": 45,
-      "gender": "F",
-      "country": "Mexico",
-      "city": "CDMX",
-      "registration_date": new Date("2022-12-05")
-   },
-   {
-      "user_id": "U005",
-      "age": 28,
-      "gender": "M",
-      "country": "Spain",
-      "city": "Madrid",
-      "registration_date": new Date("2023-06-18")
-   }
-])
-
-// Insert sample viewing sessions
-db.viewing_sessions.insertMany([
-   {
-      "session_id": "S001",
-      "user_id": "U001",
-      "content_id": "M001",
-      "start_time": new Date("2024-01-15T19:30:00Z"),
-      "end_time": new Date("2024-01-15T22:29:00Z"),
-      "watch_duration": 179,
-      "device_type": "smart_tv",
-      "quality": "4K",
-      "completed": true
-   },
-   {
-      "session_id": "S002",
-      "user_id": "U002",
-      "content_id": "M002",
-      "start_time": new Date("2024-02-10T20:00:00Z"),
-      "end_time": new Date("2024-02-10T21:30:00Z"),
-      "watch_duration": 90,
-      "device_type": "mobile",
-      "quality": "HD",
-      "completed": false
-   },
-   {
-      "session_id": "S003",
-      "user_id": "U003",
-      "content_id": "M003",
-      "start_time": new Date("2024-03-05T18:45:00Z"),
-      "end_time": new Date("2024-03-05T21:57:00Z"),
-      "watch_duration": 132,
-      "device_type": "desktop",
-      "quality": "HD",
-      "completed": true
-   },
-   {
-      "session_id": "S004",
-      "user_id": "U001",
-      "content_id": "M004",
-      "start_time": new Date("2024-04-20T21:15:00Z"),
-      "end_time": new Date("2024-04-20T23:53:00Z"),
-      "watch_duration": 158,
-      "device_type": "smart_tv",
-      "quality": "4K",
-      "completed": true
-   }
-])
-
-// ============================================
-// 3. PROPER INDEXING STRATEGIES
-// ============================================
-
-// Indexes for movies collection
-db.movies.createIndex({ "content_id": 1 }, { unique: true })
-db.movies.createIndex({ "genre": 1 })
-db.movies.createIndex({ "release_year": 1 })
-db.movies.createIndex({ "rating": -1 })
-db.movies.createIndex({ "views_count": -1 })
-db.movies.createIndex({ "genre": 1, "release_year": 1, "rating": -1 }) // Compound index
-
-// Indexes for users collection
-db.users.createIndex({ "user_id": 1 }, { unique: true })
-db.users.createIndex({ "country": 1, "city": 1 })
-db.users.createIndex({ "age": 1, "gender": 1 })
-db.users.createIndex({ "registration_date": 1 })
-
-// Indexes for viewing_sessions collection
-db.viewing_sessions.createIndex({ "session_id": 1 }, { unique: true })
-db.viewing_sessions.createIndex({ "user_id": 1, "start_time": -1 })
-db.viewing_sessions.createIndex({ "content_id": 1, "start_time": -1 })
-db.viewing_sessions.createIndex({ "start_time": -1 }) // For time-series queries
-db.viewing_sessions.createIndex({ "device_type": 1, "quality": 1 })
-
-// ============================================
-// 4. AGGREGATION PIPELINES (Minimum 3 stages each)
-// ============================================
-
-// AGGREGATION 1: User Engagement Metrics by Demographics
-print("=== 1. USER ENGAGEMENT METRICS BY DEMOGRAPHICS ===")
-db.viewing_sessions.aggregate([
-   {
-      // Stage 1: Lookup user demographics
-      $lookup: {
-         from: "users",
-         localField: "user_id",
-         foreignField: "user_id",
-         as: "user_info"
-      }
-   },
-   {
-      // Stage 2: Unwind user info and filter valid sessions
-      $unwind: "$user_info"
-   },
-   {
-      // Stage 3: Add computed fields for engagement metrics
-      $addFields: {
-         age_group: {
-            $switch: {
-               branches: [
-                  { case: { $lt: ["$user_info.age", 25] }, then: "18-24" },
-                  { case: { $lt: ["$user_info.age", 35] }, then: "25-34" },
-                  { case: { $lt: ["$user_info.age", 45] }, then: "35-44" },
-                  { case: { $gte: ["$user_info.age", 45] }, then: "45+" }
-               ],
-               default: "Unknown"
+    }
+  },
+  
+  // Etapa 3: Ordenar y formatear resultados
+  {
+    $project: {
+      genre: "$_id",
+      total_content: 1,
+      avg_rating: { $round: ["$avg_rating", 2] },
+      total_views: 1,
+      avg_budget_millions: { $round: [{ $divide: ["$avg_budget", 1000000] }, 1] },
+      top_rated: {
+        $arrayElemAt: [
+          {
+            $sortArray: {
+              input: "$top_content",
+              sortBy: { rating: -1 }
             }
-         },
-         completion_rate: {
-            $cond: [
-               { $eq: ["$completed", true] },
-               1,
-               { $divide: ["$watch_duration", 100] }
+          },
+          0
+        ]
+      }
+    }
+  },
+  
+  // Etapa 4: Ordenar por rating promedio
+  {
+    $sort: { avg_rating: -1 }
+  }
+]);
+
+// =====================================================
+// PIPELINE DE AGREGACIÓN 2: ANÁLISIS DE ROI Y RENDIMIENTO
+// =====================================================
+
+print("\n🚀 PIPELINE 2: Análisis de ROI y rendimiento financiero");
+
+db.content.aggregate([
+  // Etapa 1: Calcular métricas de rendimiento
+  {
+    $addFields: {
+      views_per_million_budget: {
+        $round: [
+          { 
+            $divide: [
+              "$views_count", 
+              { $divide: ["$production_budget", 1000000] }
             ]
-         }
+          }, 
+          2
+        ]
+      },
+      budget_category: {
+        $switch: {
+          branches: [
+            { case: { $lt: ["$production_budget", 50000000] }, then: "Low Budget" },
+            { case: { $lt: ["$production_budget", 100000000] }, then: "Medium Budget" },
+            { case: { $gte: ["$production_budget", 100000000] }, then: "High Budget" }
+          ],
+          default: "Unknown"
+        }
       }
-   },
-   {
-      // Stage 4: Group by demographics and calculate metrics
-      $group: {
-         _id: {
-            age_group: "$age_group",
-            gender: "$user_info.gender",
-            country: "$user_info.country"
-         },
-         total_sessions: { $sum: 1 },
-         avg_watch_duration: { $avg: "$watch_duration" },
-         avg_completion_rate: { $avg: "$completion_rate" },
-         unique_users: { $addToSet: "$user_id" }
+    }
+  },
+  
+  // Etapa 2: Agrupar por categoría de presupuesto
+  {
+    $group: {
+      _id: {
+        budget_category: "$budget_category",
+        type: "$type"
+      },
+      content_count: { $sum: 1 },
+      avg_rating: { $avg: "$rating" },
+      avg_views_per_million: { $avg: "$views_per_million_budget" },
+      total_budget: { $sum: "$production_budget" },
+      total_views: { $sum: "$views_count" },
+      best_performer: {
+        $max: {
+          title: "$title",
+          roi_metric: "$views_per_million_budget"
+        }
       }
-   },
-   {
-      // Stage 5: Add user count and sort results
-      $addFields: {
-         unique_user_count: { $size: "$unique_users" }
-      }
-   },
-   {
-      // Stage 6: Sort by engagement metrics
-      $sort: { "avg_completion_rate": -1, "total_sessions": -1 }
-   }
-])
-
-// AGGREGATION 2: Content Performance Analytics
-print("\n=== 2. CONTENT PERFORMANCE ANALYTICS ===")
-db.movies.aggregate([
-   {
-      // Stage 1: Lookup viewing sessions for each movie
-      $lookup: {
-         from: "viewing_sessions",
-         localField: "content_id",
-         foreignField: "content_id",
-         as: "sessions"
-      }
-   },
-   {
-      // Stage 2: Add computed performance metrics
-      $addFields: {
-         total_viewing_sessions: { $size: "$sessions" },
-         total_watch_time: { $sum: "$sessions.watch_duration" },
-         completed_sessions: {
-            $size: {
-               $filter: {
-                  input: "$sessions",
-                  cond: { $eq: ["$$this.completed", true] }
-               }
-            }
-         }
-      }
-   },
-   {
-      // Stage 3: Calculate performance ratios and ROI
-      $addFields: {
-         completion_rate: {
-            $cond: [
-               { $gt: ["$total_viewing_sessions", 0] },
-               { $divide: ["$completed_sessions", "$total_viewing_sessions"] },
-               0
+    }
+  },
+  
+  // Etapa 3: Formatear y proyectar resultados finales
+  {
+    $project: {
+      budget_category: "$_id.budget_category",
+      content_type: "$_id.type",
+      content_count: 1,
+      avg_rating: { $round: ["$avg_rating", 2] },
+      avg_views_per_million_budget: { $round: ["$avg_views_per_million", 0] },
+      total_budget_millions: { $round: [{ $divide: ["$total_budget", 1000000] }, 1] },
+      total_views: 1,
+      efficiency_score: {
+        $round: [
+          { 
+            $multiply: [
+              { $divide: ["$avg_rating", 5] },
+              { $divide: ["$avg_views_per_million", 1000] }
             ]
-         },
-         avg_session_duration: {
-            $cond: [
-               { $gt: ["$total_viewing_sessions", 0] },
-               { $divide: ["$total_watch_time", "$total_viewing_sessions"] },
-               0
+          }, 
+          3
+        ]
+      }
+    }
+  },
+  
+  // Etapa 4: Ordenar por score de eficiencia
+  {
+    $sort: { efficiency_score: -1 }
+  }
+]);
+
+// =====================================================
+// PIPELINE DE AGREGACIÓN 3: ANÁLISIS TEMPORAL CON ANALYTICS
+// =====================================================
+
+print("\n🚀 PIPELINE 3: Análisis temporal con datos de analytics");
+
+db.analytics.aggregate([
+  // Etapa 1: Join con datos de contenido
+  {
+    $lookup: {
+      from: "content",
+      localField: "content_id",
+      foreignField: "content_id",
+      as: "content_info"
+    }
+  },
+  
+  // Etapa 2: Desenrollar y estructurar datos
+  {
+    $unwind: "$content_info"
+  },
+  
+  // Etapa 3: Calcular métricas avanzadas por contenido
+  {
+    $group: {
+      _id: {
+        content_id: "$content_id",
+        title: "$content_info.title",
+        type: "$content_info.type",
+        month: { $month: "$date" },
+        year: { $year: "$date" }
+      },
+      total_daily_views: { $sum: "$daily_views" },
+      total_revenue: { $sum: "$revenue" },
+      avg_user_rating: { 
+        $avg: { 
+          $avg: "$user_ratings" 
+        } 
+      },
+      performance_dates: {
+        $push: {
+          date: "$date",
+          views: "$daily_views",
+          revenue: "$revenue"
+        }
+      },
+      demographics_summary: {
+        $push: "$demographic_data"
+      }
+    }
+  },
+  
+  // Etapa 4: Calcular métricas finales y rankings
+  {
+    $addFields: {
+      revenue_per_view: {
+        $round: [
+          { $divide: ["$total_revenue", "$total_daily_views"] }, 
+          2
+        ]
+      },
+      performance_period: {
+        $concat: [
+          { $toString: "$_id.month" },
+          "/",
+          { $toString: "$_id.year" }
+        ]
+      }
+    }
+  },
+  
+  // Etapa 5: Proyección final y ordenamiento
+  {
+    $project: {
+      content_id: "$_id.content_id",
+      title: "$_id.title",
+      type: "$_id.type",
+      performance_period: 1,
+      total_daily_views: 1,
+      total_revenue: { $round: ["$total_revenue", 2] },
+      revenue_per_view: 1,
+      avg_user_rating: { $round: ["$avg_user_rating", 2] },
+      profitability_score: {
+        $round: [
+          {
+            $multiply: [
+              "$revenue_per_view",
+              { $divide: ["$avg_user_rating", 5] },
+              { $divide: ["$total_daily_views", 1000] }
             ]
-         },
-         roi_metric: {
-            $cond: [
-               { $gt: ["$production_budget", 0] },
-               { $divide: ["$views_count", "$production_budget"] },
-               0
-            ]
-         }
+          },
+          3
+        ]
       }
-   },
-   {
-      // Stage 4: Group by genre for category analysis
-      $unwind: "$genre"
-   },
-   {
-      // Stage 5: Calculate genre-based performance
-      $group: {
-         _id: "$genre",
-         movies_in_genre: { $sum: 1 },
-         avg_rating: { $avg: "$rating" },
-         avg_completion_rate: { $avg: "$completion_rate" },
-         total_views: { $sum: "$views_count" },
-         avg_roi: { $avg: "$roi_metric" },
-         top_movie: { $first: "$$ROOT" }
-      }
-   },
-   {
-      // Stage 6: Sort by performance metrics
-      $sort: { "avg_completion_rate": -1, "avg_rating": -1 }
-   }
-])
+    }
+  },
+  
+  // Etapa 6: Ordenar por score de rentabilidad
+  {
+    $sort: { profitability_score: -1 }
+  }
+]);
 
-// AGGREGATION 3: Geographic Distribution Analysis
-print("\n=== 3. GEOGRAPHIC DISTRIBUTION ANALYSIS ===")
-db.users.aggregate([
-   {
-      // Stage 1: Lookup viewing sessions for each user
-      $lookup: {
-         from: "viewing_sessions",
-         localField: "user_id",
-         foreignField: "user_id",
-         as: "sessions"
-      }
-   },
-   {
-      // Stage 2: Filter active users and add metrics
-      $match: {
-         "sessions.0": { $exists: true }
-      }
-   },
-   {
-      // Stage 3: Add geographic and activity metrics
-      $addFields: {
-         total_sessions: { $size: "$sessions" },
-         total_watch_time: { $sum: "$sessions.watch_duration" },
-         avg_session_duration: { $avg: "$sessions.watch_duration" },
-         device_preferences: "$sessions.device_type"
-      }
-   },
-   {
-      // Stage 4: Group by geographic location
-      $group: {
-         _id: {
-            country: "$country",
-            city: "$city"
-         },
-         user_count: { $sum: 1 },
-         total_sessions: { $sum: "$total_sessions" },
-         avg_watch_time_per_user: { $avg: "$total_watch_time" },
-         avg_session_duration: { $avg: "$avg_session_duration" },
-         all_devices: { $push: "$device_preferences" }
-      }
-   },
-   {
-      // Stage 5: Calculate geographic engagement metrics
-      $addFields: {
-         sessions_per_user: {
-            $divide: ["$total_sessions", "$user_count"]
-         },
-         popular_devices: {
-            $reduce: {
-               input: "$all_devices",
-               initialValue: [],
-               in: { $concatArrays: ["$$value", "$$this"] }
-            }
-         }
-      }
-   },
-   {
-      // Stage 6: Sort by user engagement
-      $sort: { "sessions_per_user": -1, "user_count": -1 }
-   }
-])
-
-// AGGREGATION 4: Time-series Viewing Trends
-print("\n=== 4. TIME-SERIES VIEWING TRENDS ===")
-db.viewing_sessions.aggregate([
-   {
-      // Stage 1: Add time-based grouping fields
-      $addFields: {
-         year: { $year: "$start_time" },
-         month: { $month: "$start_time" },
-         day_of_week: { $dayOfWeek: "$start_time" },
-         hour: { $hour: "$start_time" },
-         date_only: {
-            $dateToString: {
-               format: "%Y-%m-%d",
-               date: "$start_time"
-            }
-         }
-      }
-   },
-   {
-      // Stage 2: Lookup movie information for genre analysis
-      $lookup: {
-         from: "movies",
-         localField: "content_id",
-         foreignField: "content_id",
-         as: "movie_info"
-      }
-   },
-   {
-      // Stage 3: Unwind movie info and filter
-      $unwind: "$movie_info"
-   },
-   {
-      // Stage 4: Group by time periods for trending analysis
-      $group: {
-         _id: {
-            year: "$year",
-            month: "$month",
-            day_of_week: "$day_of_week",
-            hour: "$hour"
-         },
-         sessions_count: { $sum: 1 },
-         total_watch_time: { $sum: "$watch_duration" },
-         avg_watch_duration: { $avg: "$watch_duration" },
-         unique_users: { $addToSet: "$user_id" },
-         unique_movies: { $addToSet: "$content_id" },
-         completion_rate: {
-            $avg: {
-               $cond: [{ $eq: ["$completed", true] }, 1, 0]
-            }
-         },
-         popular_genres: { $push: "$movie_info.genre" },
-         device_distribution: { $push: "$device_type" }
-      }
-   },
-   {
-      // Stage 5: Add computed trend metrics
-      $addFields: {
-         unique_user_count: { $size: "$unique_users" },
-         unique_movie_count: { $size: "$unique_movies" },
-         day_name: {
-            $switch: {
-               branches: [
-                  { case: { $eq: ["$_id.day_of_week", 1] }, then: "Sunday" },
-                  { case: { $eq: ["$_id.day_of_week", 2] }, then: "Monday" },
-                  { case: { $eq: ["$_id.day_of_week", 3] }, then: "Tuesday" },
-                  { case: { $eq: ["$_id.day_of_week", 4] }, then: "Wednesday" },
-                  { case: { $eq: ["$_id.day_of_week", 5] }, then: "Thursday" },
-                  { case: { $eq: ["$_id.day_of_week", 6] }, then: "Friday" },
-                  { case: { $eq: ["$_id.day_of_week", 7] }, then: "Saturday" }
-               ],
-               default: "Unknown"
-            }
-         }
-      }
-   },
-   {
-      // Stage 6: Sort by time for chronological trends
-      $sort: {
-         "_id.year": 1,
-         "_id.month": 1,
-         "_id.day_of_week": 1,
-         "_id.hour": 1
-      }
-   }
-])
-
-// ============================================
-// 5. PERFORMANCE OPTIMIZATION QUERIES
-// ============================================
-
-// Explain query plans for performance analysis
-print("\n=== PERFORMANCE ANALYSIS ===")
-
-// Check index usage for complex query
-db.viewing_sessions.explain("executionStats").aggregate([
-   {
-      $match: {
-         start_time: {
-            $gte: new Date("2024-01-01"),
-            $lt: new Date("2024-12-31")
-         }
-      }
-   },
-   {
-      $lookup: {
-         from: "users",
-         localField: "user_id",
-         foreignField: "user_id",
-         as: "user_info"
-      }
-   },
-   {
-      $group: {
-         _id: "$user_info.country",
-         total_sessions: { $sum: 1 }
-      }
-   }
-])
-
-// ============================================
-// 6. DATA VALIDATION AND MAINTENANCE
-// ============================================
-
-// Validate data integrity
-print("\n=== DATA VALIDATION ===")
-
-// Check for orphaned viewing sessions (sessions without valid users)
-db.viewing_sessions.aggregate([
-   {
-      $lookup: {
-         from: "users",
-         localField: "user_id",
-         foreignField: "user_id",
-         as: "user_check"
-      }
-   },
-   {
-      $match: {
-         user_check: { $size: 0 }
-      }
-   },
-   {
-      $count: "orphaned_sessions"
-   }
-])
-
-// Check for orphaned viewing sessions (sessions without valid movies)
-db.viewing_sessions.aggregate([
-   {
-      $lookup: {
-         from: "movies",
-         localField: "content_id",
-         foreignField: "content_id",
-         as: "movie_check"
-      }
-   },
-   {
-      $match: {
-         movie_check: { $size: 0 }
-      }
-   },
-   {
-      $count: "sessions_with_invalid_movies"
-   }
-])
-
-// ============================================
-// 7. UTILITY QUERIES FOR ANALYSIS
-// ============================================
-
-// Get collection statistics
-print("\n=== COLLECTION STATISTICS ===")
-db.movies.stats()
-db.users.stats()  
-db.viewing_sessions.stats()
-
-// Get index information
-print("\n=== INDEX INFORMATION ===")
-db.movies.getIndexes()
-db.users.getIndexes()
-db.viewing_sessions.getIndexes()
-
-print("\n=== MONGODB SETUP COMPLETE ===")
-print("All collections created with proper validation schemas")
-print("Sample data inserted with appropriate indexing")
-print("Four comprehensive aggregation pipelines implemented")
-print("Performance optimization strategies applied")
+print("\n✅ Todos los pipelines ejecutados exitosamente");
+print("📊 Revisa los resultados de cada agregación para obtener insights sobre tu plataforma de streaming");
