@@ -316,7 +316,7 @@ streaming-analytics-project/
 - `fase4` - ETL pipeline development
 
 ## Contributing
-This is an academic project for Visual modeling for information . Each phase should be completed following the specified deliverables and evaluation criteria.
+This is an academic project for Data Engineering course. Each phase should be completed following the specified deliverables and evaluation criteria.
 
 ## License
 Academic project - Educational use only
