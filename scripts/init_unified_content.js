@@ -1,10 +1,11 @@
 // ============================================
 // MONGODB UNIFIED CONTENT ANALYTICS PROJECT
 // Single collection approach for movies and series
+// With authentication
 // ============================================
 
 // Switch to the database
-use movieAnalyticsDB
+//use video_streaming_platform
 
 // ============================================
 // 1. UNIFIED COLLECTION DESIGN
