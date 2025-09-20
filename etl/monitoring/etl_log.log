@@ -1,0 +1,19 @@
+2025-09-19 22:35:44,603 [INFO] ==== INICIO DEL PIPELINE ETL ====
+2025-09-19 22:35:44,604 [ERROR] Error extrayendo usuarios: [Errno 2] No such file or directory: '/home/emmanuel/Downloads/etl/data/raw/users.csv'
+2025-09-19 22:38:49,322 [INFO] ==== INICIO DEL PIPELINE ETL ====
+2025-09-19 22:38:49,329 [INFO] Users extracted: 5000 registros
+2025-09-19 22:38:49,547 [INFO] Sessions extracted: 222785 registros
+2025-09-19 22:38:49,549 [INFO] Content extracted: 1 registros
+2025-09-19 22:38:49,676 [ERROR] Error en transformación: 'content_id'
+2025-09-19 22:39:03,246 [INFO] ==== INICIO DEL PIPELINE ETL ====
+2025-09-19 22:39:03,255 [INFO] Users extracted: 5000 registros
+2025-09-19 22:39:03,483 [INFO] Sessions extracted: 222785 registros
+2025-09-19 22:39:03,484 [INFO] Content extracted: 1 registros
+2025-09-19 22:39:03,610 [ERROR] Error en transformación: 'content_id'
+2025-09-19 23:01:12,474 [INFO] ==== INICIO DEL PIPELINE ETL ====
+2025-09-19 23:01:12,482 [INFO] Users extracted: 5000 registros
+2025-09-19 23:01:12,735 [INFO] Sessions extracted: 222785 registros
+2025-09-19 23:01:12,738 [INFO] Content extracted: 200 registros
+2025-09-19 23:01:12,994 [INFO] Transformación completada: 222785 registros finales
+2025-09-19 23:01:13,619 [INFO] Carga inicial completa: 222785 registros.
+2025-09-19 23:01:13,619 [INFO] ==== FIN DEL PIPELINE ETL ====
