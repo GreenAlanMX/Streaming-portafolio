@@ -1,0 +1,5 @@
+cluster_kmeans,sessions_count,avg_duration,avg_completion,unique_content,age,subscription_type,user_count
+0,72.66,86.97,0.86,63.13,37.99,Premium,1150
+1,23.92,65.02,0.66,22.74,45.55,Basic,1136
+2,28.96,85.41,0.83,27.17,36.88,Standard,1421
+3,54.83,71.03,0.71,49.62,46.5,Basic,1293
