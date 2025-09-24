@@ -81,3 +81,4 @@ For larger projects, consider using **Apache Airflow** or **Prefect**.
 - **Libraries:** Pandas, PyArrow/Fastparquet, Prefect, Pytest, Logging  
 - **Output format:** Parquet  
 - **Orchestration:** Prefect (with option for Airflow/cron)  
+# Streaming-portafolio
