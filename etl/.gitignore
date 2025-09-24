@@ -15,3 +15,6 @@ data/processed/
 
 # Ignore Jupyter checkpoints (if you use notebooks)
 .ipynb_checkpoints/
+
+# macOS system files
+.DS_Store
