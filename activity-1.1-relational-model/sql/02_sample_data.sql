@@ -1,40 +1,34 @@
--- Sample Data for Streaming Platform
--- Activity 1.1: Relational Model
-
-USE streaming_platform;
-
--- Insert sample users
+-- Insertar usuarios
 INSERT INTO users (user_id, age, country, subscription_type, registration_date, total_watch_time_hours) VALUES
-('USR001', 25, 'United States', 'premium', '2023-01-15', 245.50),
-('USR002', 34, 'Canada', 'family', '2023-02-20', 189.75),
-('USR003', 28, 'Mexico', 'free', '2023-03-10', 67.25),
-('USR004', 45, 'United Kingdom', 'premium', '2023-01-05', 312.80),
-('USR005', 22, 'Germany', 'student', '2023-04-12', 98.40),
-('USR006', 31, 'France', 'premium', '2023-02-28', 156.90),
-('USR007', 29, 'Spain', 'free', '2023-03-25', 45.60),
-('USR008', 38, 'Italy', 'family', '2023-01-30', 278.35),
-('USR009', 26, 'Brazil', 'premium', '2023-04-05', 201.70),
-('USR010', 33, 'Argentina', 'student', '2023-03-15', 134.85);
+('USR001', 25, 'United States', 'premium', '2023-01-10', 120.5),
+('USR002', 32, 'Canada', 'family', '2023-02-05', 95.3),
+('USR003', 28, 'Mexico', 'free', '2023-03-12', 45.8),
+('USR004', 40, 'Brazil', 'premium', '2023-04-08', 210.7),
+('USR005', 22, 'Argentina', 'student', '2023-05-15', 78.2),
+('USR006', 35, 'Spain', 'premium', '2023-06-20', 156.4),
+('USR007', 27, 'France', 'family', '2023-07-18', 89.5),
+('USR008', 30, 'Germany', 'premium', '2023-08-22', 134.9),
+('USR009', 45, 'Italy', 'free', '2023-09-11', 67.3),
+('USR010', 29, 'United Kingdom', 'premium', '2023-10-03', 312.6);
 
--- Insert sample viewing sessions
+-- Insertar catálogo de contenidos
+INSERT INTO content (content_id, title, genre, release_year, rating) VALUES
+('MOV001', 'Avengers: Endgame', 'Action', 2019, 4.8),
+('MOV002', 'Inception', 'Sci-Fi', 2010, 4.7),
+('SER001', 'Breaking Bad', 'Drama', 2008, 4.9),
+('SER002', 'Stranger Things', 'Sci-Fi', 2016, 4.6),
+('DOC001', 'Planet Earth', 'Documentary', 2006, 4.7),
+('DOC002', 'The Social Dilemma', 'Documentary', 2020, 4.2);
+
+-- Insertar sesiones de visualización
 INSERT INTO viewing_sessions (session_id, user_id, content_id, watch_date, watch_duration_minutes, completion_percentage, device_type, quality_level) VALUES
-('SES001', 'USR001', 'MOV001', '2023-05-01', 120, 100.00, 'smart_tv', '4K'),
-('SES002', 'USR001', 'SER001', '2023-05-02', 45, 75.00, 'mobile', 'HD'),
-('SES003', 'USR002', 'DOC001', '2023-05-01', 90, 100.00, 'desktop', 'FHD'),
-('SES004', 'USR002', 'MOV002', '2023-05-03', 95, 85.50, 'tv', 'HD'),
-('SES005', 'USR003', 'SER002', '2023-05-02', 30, 50.00, 'mobile', 'SD'),
-('SES006', 'USR004', 'MOV003', '2023-05-01', 110, 100.00, 'smart_tv', '4K'),
-('SES007', 'USR004', 'DOC002', '2023-05-04', 60, 100.00, 'tablet', 'HD'),
-('SES008', 'USR005', 'SER003', '2023-05-03', 25, 40.00, 'mobile', 'SD'),
-('SES009', 'USR006', 'MOV004', '2023-05-02', 105, 95.00, 'desktop', 'FHD'),
-('SES010', 'USR006', 'SER004', '2023-05-05', 50, 80.00, 'tv', 'HD'),
-('SES011', 'USR007', 'DOC003', '2023-05-03', 40, 60.00, 'mobile', 'SD'),
-('SES012', 'USR008', 'MOV005', '2023-05-01', 130, 100.00, 'smart_tv', '4K'),
-('SES013', 'USR008', 'SER005', '2023-05-04', 35, 70.00, 'tablet', 'HD'),
-('SES014', 'USR009', 'DOC004', '2023-05-02', 70, 100.00, 'desktop', 'FHD'),
-('SES015', 'USR009', 'MOV006', '2023-05-05', 85, 90.00, 'tv', 'HD'),
-('SES016', 'USR010', 'SER006', '2023-05-03', 20, 35.00, 'mobile', 'SD'),
-('SES017', 'USR001', 'DOC005', '2023-05-06', 55, 100.00, 'tablet', 'HD'),
-('SES018', 'USR002', 'SER007', '2023-05-04', 40, 65.00, 'mobile', 'SD'),
-('SES019', 'USR003', 'MOV007', '2023-05-05', 75, 80.00, 'desktop', 'HD'),
-('SES020', 'USR004', 'DOC006', '2023-05-06', 65, 100.00, 'smart_tv', '4K');
+('SES001', 'USR001', 'MOV001', '2023-05-01', 120, 95.5, 'mobile', 'HD'),
+('SES002', 'USR002', 'SER001', '2023-05-02', 45, 88.2, 'desktop', 'FHD'),
+('SES003', 'USR003', 'DOC001', '2023-05-03', 60, 76.0, 'tv', '4K'),
+('SES004', 'USR004', 'MOV002', '2023-05-04', 130, 98.0, 'smart_tv', '4K'),
+('SES005', 'USR005', 'SER002', '2023-05-05', 55, 82.3, 'tablet', 'HD'),
+('SES006', 'USR006', 'MOV001', '2023-05-06', 125, 91.5, 'mobile', 'HD'),
+('SES007', 'USR007', 'DOC002', '2023-05-07', 50, 74.0, 'desktop', 'FHD'),
+('SES008', 'USR008', 'SER001', '2023-05-08', 47, 80.2, 'tv', 'FHD'),
+('SES009', 'USR009', 'MOV002', '2023-05-09', 110, 89.0, 'smart_tv', '4K'),
+('SES010', 'USR010', 'SER002', '2023-05-10', 53, 77.5, 'mobile', 'HD');
