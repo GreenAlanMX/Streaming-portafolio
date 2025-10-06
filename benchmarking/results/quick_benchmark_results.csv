@@ -1,0 +1,4 @@
+data_size,users_count,sessions_count,content_count,total_records,execution_time,memory_peak_mb,cpu_avg,throughput,success,error_message
+small,500,2500,50,3050,8.918842315673828,0,0,341.97263412090825,True,
+medium,1000,5000,100,6100,8.682248830795288,0,0,702.5829504406457,True,
+large,2000,10000,200,12200,9.00042986869812,0,0,1355.4908129921007,True,
