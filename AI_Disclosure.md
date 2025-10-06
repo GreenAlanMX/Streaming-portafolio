@@ -1,4 +1,14 @@
 ### AI Assistance Disclosure
+## Team
+
+Add full names, roles, and GitHub profiles here.
+
+- Name: [Janeth Valdivia] — Role: Project manager
+- Name: [Alan Leonardo Mnedoza Xicotencatl] — Role: Data Analyst
+- Name: [Daniel Herrera Balam] — Role: data visualization
+- Name: [Alejandro Caballero Coll] — Role: data visualization 
+- Name: [Emmanuel Carmona Altamirano] — Role: Data engineer
+
 
 Last updated: 2025-10-06
 
