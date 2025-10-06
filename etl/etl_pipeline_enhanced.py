@@ -128,16 +128,16 @@ def validate_users(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def validate_sessions(df: pd.DataFrame) -> pd.DataFrame:
-    if "completion_percentage" in df.columns:
-        invalid_completion = (~df["completion_percentage"].between(0, 100)).sum()
-        df.loc[~df["completion_percentage"].between(0, 100), "completion_percentage"] = pd.NA
+    if "completion_rate" in df.columns:
+        invalid_completion = (~df["completion_rate"].between(0, 100)).sum()
+        df.loc[~df["completion_rate"].between(0, 100), "completion_rate"] = pd.NA
         if invalid_completion:
-            logging.warning("Se corrigieron %s valores inválidos en completion_percentage", invalid_completion)
-    if "watch_duration_minutes" in df.columns:
-        invalid_durations = (df["watch_duration_minutes"] < 0).sum()
-        df.loc[df["watch_duration_minutes"] < 0, "watch_duration_minutes"] = pd.NA
+            logging.warning("Se corrigieron %s valores inválidos en completion_rate", invalid_completion)
+    if "duration_watched" in df.columns:
+        invalid_durations = (df["duration_watched"] < 0).sum()
+        df.loc[df["duration_watched"] < 0, "duration_watched"] = pd.NA
         if invalid_durations:
-            logging.warning("Se corrigieron %s duraciones negativas en watch_duration_minutes", invalid_durations)
+            logging.warning("Se corrigieron %s duraciones negativas en duration_watched", invalid_durations)
     return df
 
 def validate_content(df: pd.DataFrame) -> pd.DataFrame:
@@ -310,8 +310,8 @@ def detect_outliers_iqr(df: pd.DataFrame, name: str) -> Path:
 # ---------------- Aggregate (user level) ----------
 
 def aggregate_user_metrics(df: pd.DataFrame) -> pd.DataFrame:
-    duration_col = "watch_duration_minutes"
-    completion_col = "completion_percentage"
+    duration_col = "duration_watched"
+    completion_col = "completion_rate"
     grouped = df.groupby("user_id")
     user_agg = grouped.agg(
         sessions_count=("session_id", "count"),
