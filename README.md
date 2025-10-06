@@ -1,84 +1,69 @@
-# 📊 ETL Pipeline – Streaming Analytics Project
+# Streaming-portafolio – Integrated Portfolio (Phases 1.1 → 4)
 
-This project implements a complete **ETL pipeline** for a *streaming analytics* scenario, integrating multiple data sources (CSV and JSON), applying data validation and cleaning rules, and generating a final dataset optimized in **Parquet** format.
+This repository now integrates all phases into `main`: relational (1.1), NoSQL (1.2), statistical analysis (2), visualization (3), and ETL (4). It includes unified documentation, AI disclosure, and a demo workflow.
 
-## 🚀 Key Features
-- **Extract:** Integration of multiple sources (`users.csv`, `viewing_sessions.csv`, `content.json`).
-- **Transform:** 
-  - Data cleaning (nulls, date formats, numeric conversion).
-  - Validation rules (minimum age, valid release year, completion % 0–100, etc.).
-  - Data enrichment by joining users, sessions, and content catalog.
-- **Load:** 
-  - Incremental load → only new `session_id` records are added.
-  - Output in **Parquet** format optimized for large datasets.
-- **Monitor:** 
-  - Detailed logging in `monitoring/etl_log.log`.
-  - Error handling with `try/except`.
-  - Warnings when invalid values are corrected.
-- **Scale:** 
-  - Chunked CSV reading (`chunksize`) for big files.
-  - Parquet for reduced space and better performance.
-- **Documentation:** Complete process documentation in `docs/etl-documentation.md`.
+## Team
+See `TEAM.md` for member names, roles, and profiles. Contributions are summarized per responsibility area.
 
-## 📂 Project Structure
+## AI Disclosure
+Summary: AI assisted code drafting, troubleshooting, and documentation. Human reviewed, executed, and validated all changes. Full disclosure in `AI_Disclosure.md` and per-session notes in `AI-assistence-1.md` to `AI-assistence-4.md`.
+
+## Architecture Overview
+- Data sources: PostgreSQL, MongoDB, CSV/JSON
+- ETL orchestration: Prefect (`etl/etl_pipeline_enhanced.py`)
+- Analytics: user aggregation and KMeans clustering
+- Visualization: Streamlit dashboard (`notebooks/streamlit_dashboard.py`)
+
+## Project Structure (Integrated)
 ```
+docs/
+ ├── database-design.md
+ ├── statistical-analysis.md
+ ├── visualization-guide.md
+ └── etl-documentation.md
 etl/
- ├── data/
- │   ├── raw/                  # Input data
- │   │   ├── users.csv
- │   │   ├── viewing_sessions.csv
- │   │   └── content.json
- │   └── processed/            # Processed output data (Parquet)
- ├── monitoring/
- │   └── etl_log.log           # Execution logs
- ├── docs/
- │   └── etl-documentation.md  # Technical documentation
- ├── etl_pipeline_enhanced.py  # 🚀 Main ETL pipeline
- ├── test_validation.py        # Unit tests (pytest)
- ├── requirements.txt          # Dependencies
- ├── README.md                 # This file
- └── venv/                     # Virtual environment (ignored in Git)
+ ├── data/raw/            # Input data (or DB via .env)
+ ├── data/processed/      # Parquet + analytics CSVs
+ └── etl_pipeline_enhanced.py
+notebooks/
+ ├── Phase2_Statistical_Analysis.ipynb
+ ├── Phase3_Interactive_Dashboards.ipynb
+ ├── streamlit_dashboard.py
+ └── output/
+presentation/
+ └── README.md            # slides/infographic placeholders
+TEAM.md
+AI_Disclosure.md
 ```
 
-## ⚙️ Installation & Usage
-1. Clone the repository or download the project.  
-2. Create a virtual environment and install dependencies:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate   # Linux/Mac
-   venv\Scripts\activate      # Windows
-   pip install -r requirements.txt
-   ```
-3. Run the pipeline from the project root:
-   ```bash
-   python3 etl_pipeline_enhanced.py
-   ```
-4. Outputs:
-   - Final dataset → `data/processed/streaming_data.parquet`  
-   - Execution logs → `monitoring/etl_log.log`
-
-## 📝 Example Log Output
+## Setup
+1) Create and populate `.env` (see `.env.example`). Key vars: `POSTGRES_*`, `MONGO_*`, `SOURCE_MODE` (database|files), queries for users/sessions.
+2) Start services:
+```bash
+docker compose up -d
 ```
-INFO     Users extracted: 5000 registros
-INFO     Sessions extracted: 200000 registros
-WARNING  Se corrigieron 100 valores inválidos en release_year
-INFO     Transformación completada: 200000 registros
-INFO     Datos cargados en data/processed/streaming_data.parquet, total 200000 registros
+3) Create venv and install:
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-## ⏰ Scheduling
-You can schedule the pipeline using **cron** (Linux/Mac) or **Task Scheduler** (Windows).  
-Example with cron (run daily at 2 AM):
-
+## Run ETL
+```bash
+cd etl
+python etl_pipeline_enhanced.py
 ```
-0 2 * * * /usr/bin/python3 /path/to/etl/etl_pipeline_enhanced.py >> /path/to/etl/monitoring/cron_etl.log 2>&1
+Outputs are written to `etl/data/processed/` and used by the dashboard.
+
+## Run Dashboard
+```bash
+cd notebooks
+streamlit run streamlit_dashboard.py --server.port 8501
 ```
 
-For larger projects, consider using **Apache Airflow** or **Prefect**.
+## Benchmarking (optional)
+See `benchmarking/README.md` and `demo_commands_fixed.md` to reproduce performance runs and the demo workflow.
 
-## 🛠️ Technologies
-- **Language:** Python 3.12  
-- **Libraries:** Pandas, PyArrow/Fastparquet, Prefect, Pytest, Logging  
-- **Output format:** Parquet  
-- **Orchestration:** Prefect (with option for Airflow/cron)  
-# Streaming-portafolio
+## Notes
+- All phase branches have been merged into `main` and reflected in `docs/`.
+- Docker configuration relies on environment variables; do not commit secrets.
